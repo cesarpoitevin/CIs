@@ -69,7 +69,7 @@
       background-color: #ddd;
     }
     .marked {
-      background-color: #90EE90 !important; /* Destaca números marcados com verde-claro */
+      background-color: #90EE90 !important;
     }
     button {
       padding: 10px 20px;
@@ -113,10 +113,9 @@
   </div>
 
   <script>
-    const maxComunicacoes = 2000; // Aumentado para mostrar mais números
+    const maxComunicacoes = 10; // Número reduzido para teste
     const tabelaBody = document.querySelector('#comunicacoes tbody');
 
-    // Simula autenticação básica
     function login() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
@@ -130,12 +129,17 @@
       }
     }
 
-    // Adiciona linhas na tabela
     function preencherTabela() {
-      // Busca os números marcados do backend antes de preencher a tabela
-      fetch('http://localhost:3000/api/comunicacoes')
-        .then((response) => response.json())
+      console.log('Buscando números marcados...');
+      fetch('http://localhost:3000/api/comunicacoes') // Ajustar a URL conforme necessário
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status}`);
+          }
+          return response.json();
+        })
         .then((comunicacoesMarcadas) => {
+          console.log('Números marcados:', comunicacoesMarcadas);
           for (let i = 0; i <= maxComunicacoes; i++) {
             const row = document.createElement('tr');
 
@@ -146,7 +150,6 @@
             const cellAcao = document.createElement('td');
             const button = document.createElement('button');
 
-            // Verifica se o número já está marcado
             if (comunicacoesMarcadas.includes(i)) {
               button.textContent = 'Desmarcar';
               row.classList.add('marked');
@@ -163,46 +166,42 @@
         })
         .catch((error) => {
           console.error('Erro ao carregar números marcados:', error);
-          alert('Não foi possível carregar os dados do servidor.');
+          alert('Erro ao carregar dados do servidor.');
         });
     }
 
     function marcarComunicacao(numero, button, row) {
-      fetch(`http://localhost:3000/api/comunicacoes/${numero}`, {
-        method: 'POST',
-      })
+      button.disabled = true;
+      fetch(`http://localhost:3000/api/comunicacoes/${numero}`, { method: 'POST' })
         .then((response) => {
-          if (response.ok) {
-            button.textContent = 'Desmarcar';
-            button.onclick = () => desmarcarComunicacao(numero, button, row);
-            row.classList.add('marked');
-          } else {
-            response.json().then((data) => alert(data.error));
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.error);
+            });
           }
+          button.textContent = 'Desmarcar';
+          button.onclick = () => desmarcarComunicacao(numero, button, row);
+          row.classList.add('marked');
         })
-        .catch((error) => {
-          console.error('Erro:', error);
-          alert('Falha ao conectar ao servidor.');
-        });
+        .catch((error) => alert(`Erro: ${error.message}`))
+        .finally(() => (button.disabled = false));
     }
 
     function desmarcarComunicacao(numero, button, row) {
-      fetch(`https://abc123.ngrok.io/api/comunicacoes/${numero}`, {
-        method: 'DELETE',
-      })
+      button.disabled = true;
+      fetch(`http://localhost:3000/api/comunicacoes/${numero}`, { method: 'DELETE' })
         .then((response) => {
-          if (response.ok) {
-            button.textContent = 'Marcar';
-            button.onclick = () => marcarComunicacao(numero, button, row);
-            row.classList.remove('marked');
-          } else {
-            response.json().then((data) => alert(data.error));
+          if (!response.ok) {
+            return response.json().then((data) => {
+              throw new Error(data.error);
+            });
           }
+          button.textContent = 'Marcar';
+          button.onclick = () => marcarComunicacao(numero, button, row);
+          row.classList.remove('marked');
         })
-        .catch((error) => {
-          console.error('Erro:', error);
-          alert('Falha ao conectar ao servidor.');
-        });
+        .catch((error) => alert(`Erro: ${error.message}`))
+        .finally(() => (button.disabled = false));
     }
   </script>
 </body>
