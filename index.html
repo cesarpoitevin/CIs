@@ -131,7 +131,7 @@
 
     function preencherTabela() {
       console.log('Buscando números marcados...');
-      fetch('https://cis-pzk8.onrender.com/api/comunicacoes') // Ajustar a URL conforme necessário
+      fetch('http://localhost:3000/api/comunicacoes') // Ajustar a URL conforme necessário
         .then((response) => {
           if (!response.ok) {
             throw new Error(`Erro na API: ${response.status}`);
@@ -172,7 +172,7 @@
 
     function marcarComunicacao(numero, button, row) {
       button.disabled = true;
-      fetch(`https://cis-pzk8.onrender.com/api/comunicacoes`, { method: 'POST' })
+      fetch(`http://localhost:3000/api/comunicacoes`, { method: 'POST' })
         .then((response) => {
           if (!response.ok) {
             return response.json().then((data) => {
@@ -189,7 +189,7 @@
 
     function desmarcarComunicacao(numero, button, row) {
       button.disabled = true;
-      fetch(`https://cis-pzk8.onrender.com/api/comunicacoes`, { method: 'DELETE' })
+      fetch(`http://localhost:3000/api/comunicacoes`, { method: 'DELETE' })
         .then((response) => {
           if (!response.ok) {
             return response.json().then((data) => {
