@@ -1,59 +1,36 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // Importa o CORS
 const app = express();
 
-// Use a porta fornecida pelo Render ou 3000 para execução local
-const PORT = process.env.PORT || 3000;
-
-app.use(cors());
+const port = process.env.PORT || 10000; // Render usa a porta fornecida
 app.use(express.json());
+app.use(cors()); // Habilita CORS
 
-// Rota principal
-app.get('/', (req, res) => {
-  res.send('Servidor rodando corretamente!');
-});
+let comunicacoesMarcadas = [];
 
-// Simula banco de dados
-const comunicacoes = new Set();
-
-// Endpoint para obter números marcados
+// Rota para buscar números marcados
 app.get('/api/comunicacoes', (req, res) => {
-  res.json([...comunicacoes]);
+  res.json(comunicacoesMarcadas);
 });
 
-// Endpoint para marcar um número
+// Rota para marcar um número
 app.post('/api/comunicacoes/:numero', (req, res) => {
-  const numero = parseInt(req.params.numero, 10);
-
-  if (isNaN(numero) || numero < 0 || numero > 2000) {
-    return res.status(400).json({ error: 'Número inválido' });
+  const numero = parseInt(req.params.numero);
+  if (!comunicacoesMarcadas.includes(numero)) {
+    comunicacoesMarcadas.push(numero);
+    res.status(200).send();
+  } else {
+    res.status(400).json({ error: 'Número já marcado' });
   }
-
-  if (comunicacoes.has(numero)) {
-    return res.status(400).json({ error: 'Esse número já foi marcado' });
-  }
-
-  comunicacoes.add(numero);
-  res.status(200).json({ message: 'Número marcado com sucesso' });
 });
 
-// Endpoint para desmarcar um número
+// Rota para desmarcar um número
 app.delete('/api/comunicacoes/:numero', (req, res) => {
-  const numero = parseInt(req.params.numero, 10);
-
-  if (isNaN(numero) || numero < 0 || numero > 2000) {
-    return res.status(400).json({ error: 'Número inválido' });
-  }
-
-  if (!comunicacoes.has(numero)) {
-    return res.status(400).json({ error: 'Esse número não está marcado' });
-  }
-
-  comunicacoes.delete(numero);
-  res.status(200).json({ message: 'Número desmarcado com sucesso' });
+  const numero = parseInt(req.params.numero);
+  comunicacoesMarcadas = comunicacoesMarcadas.filter(n => n !== numero);
+  res.status(200).send();
 });
 
-// Inicializa o servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(port, () => {
+  console.log(`Servidor rodando na porta ${port}`);
 });
